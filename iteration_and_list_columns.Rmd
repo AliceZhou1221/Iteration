@@ -1,0 +1,75 @@
+---
+title: "Iteration_and_list columns"
+output: github_document
+date: "2024-10-31"
+---
+
+```{r setup}
+library(tidyverse)
+library(rvest)
+```
+## here are some lists:
+```{r}
+l = list(
+  vec_numeric = 1:4,
+  unif_sample = runif(100),
+  mat = matrix(1:8, nrow = 2, ncol = 4, byrow = TRUE),
+  summary = summary(rnorm(1000))
+)
+
+l
+```
+access lists
+```{r}
+l$mat
+
+l[["mat"]]
+```
+
+make a list hopefully a bit more useful
+```{r}
+list_norm = 
+  list(
+    a = rnorm(20, 0, 5),
+    b = rnorm(20, 4, 5),
+    c = rnorm(20, 0, 10),
+    d = rnorm(20, 4, 10)
+  )
+
+list_norm$b
+```
+reuse function we wrote last time
+```{r}
+mean_and_sd = function(x) {
+  
+  mean_x = mean(x)
+  sd_x = sd(x)
+  
+  out_df = 
+    tibble(
+      mean = mean_x,
+      sd = sd_x
+    )
+  return(out_df)
+}
+
+```
+use the function to take mean and sd for all normal samples
+```{r}
+mean_and_sd(list_norm[["a"]])
+mean_and_sd(list_norm[["b"]])
+mean_and_sd(list_norm[["c"]])
+mean_and_sd(list_norm[["d"]])
+```
+create output list from a for loop:
+a vector of type list and length 4
+```{r}
+output = vector("list", length = 4)
+
+for (i in 1:4) {
+  output[[i]] = mean_and_sd(list_norm[[i]])
+}
+
+output
+```
+
