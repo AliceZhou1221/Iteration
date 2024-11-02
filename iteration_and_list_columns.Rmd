@@ -210,7 +210,9 @@ weather_nest=
   nest(data = date:tmin)
 ```
 
+all of the data that corresponds to central park
 ```{r}
+#extracting the first entry of data column
 weather_nest[["data"]][[1]]
 ```
 
@@ -220,6 +222,25 @@ lm(tmax ~ tmin, data = weather_nest[["data"]][[1]])
 lm(tmax ~ tmin, data = weather_nest[["data"]][[2]])
 lm(tmax ~ tmin, data = weather_nest[["data"]][[3]])
 ```
+let's define a function that fits the regression
+```{r}
+weather_lm = function(df) {
+  
+  lm(tmax~tmin, data = df)
+  
+}
+
+weather_lm(df = weather_nest[["data"]][[1]])
+```
+```{r}
+map(weather_nest[["data"]], weather_lm)
+```
+```{r}
+weather_nest %>% 
+  mutate(model_fit = map(weather_nest[["data"]], weather_lm))
+```
+
+
 ```{r}
 #here is my data, call it x, then plug it into the lm function
 weather_nest %>% 

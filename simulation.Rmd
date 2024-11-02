@@ -1,0 +1,42 @@
+---
+title: "simulation"
+output: github_document
+date: "2024-11-02"
+---
+```{r setup}
+library(tidyverse)
+library(rvest)
+```
+
+## check stuff using a simulation
+
+```{r}
+sim_df =
+  tibble(
+    x = rnorm(30, 10, 5)
+  )
+
+sim_df %>% 
+  summarize(
+    mean = mean(x),
+    sd = sd(x)
+  )
+```
+simulation function to check sample mean and sd
+
+```{r}
+sim_mean_sd = function(samp_size, true_mean = 10, true_sd = 5) {
+  sim_df =
+  tibble(
+    x = rnorm(samp_size, true_mean, true_sd)
+  )
+
+  out_df = 
+    sim_df %>%
+    summarize(
+      mean = mean(x),
+      sd = sd(x)
+  )
+  
+  return(out_df)
+}
