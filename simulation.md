@@ -1,16 +1,36 @@
----
-title: "simulation"
-output: github_document
-date: "2024-11-02"
----
-```{r setup}
+simulation
+================
+2024-11-02
+
+``` r
 library(tidyverse)
+```
+
+    ## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+    ## ✔ dplyr     1.1.4     ✔ readr     2.1.5
+    ## ✔ forcats   1.0.0     ✔ stringr   1.5.1
+    ## ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
+    ## ✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+    ## ✔ purrr     1.0.2     
+    ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ✖ dplyr::filter() masks stats::filter()
+    ## ✖ dplyr::lag()    masks stats::lag()
+    ## ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+
+``` r
 library(rvest)
 ```
 
+    ## 
+    ## Attaching package: 'rvest'
+    ## 
+    ## The following object is masked from 'package:readr':
+    ## 
+    ##     guess_encoding
+
 ## check stuff using a simulation
 
-```{r}
+``` r
 sim_df =
   tibble(
     x = rnorm(30, 10, 5)
@@ -22,8 +42,15 @@ sim_df %>%
     sd = sd(x)
   )
 ```
+
+    ## # A tibble: 1 × 2
+    ##    mean    sd
+    ##   <dbl> <dbl>
+    ## 1  9.99  5.55
+
 simulation function to check sample mean and sd
-```{r}
+
+``` r
 sim_mean_sd = function(samp_size, true_mean = 10, true_sd = 5) {
   sim_df =
   tibble(
@@ -41,13 +68,20 @@ sim_mean_sd = function(samp_size, true_mean = 10, true_sd = 5) {
 }
 ```
 
-run this a lot of times...
-```{r}
+run this a lot of times…
+
+``` r
 sim_mean_sd(30)
 ```
 
+    ## # A tibble: 1 × 2
+    ##   samp_mean samp_sd
+    ##       <dbl>   <dbl>
+    ## 1      9.45    6.04
+
 run this using a for loop?
-```{r}
+
+``` r
 output = vector("list",1000)
 
 for (i in 1:1000) {
@@ -60,18 +94,26 @@ bind_rows(output) %>%
     ave_samp_mean = mean(samp_mean),
     SE_samp_mean = sd(samp_mean)
   )
-
 ```
+
+    ## # A tibble: 1 × 2
+    ##   ave_samp_mean SE_samp_mean
+    ##           <dbl>        <dbl>
+    ## 1          10.0        0.920
+
 use map instead
-```{r}
+
+``` r
 sim_result_df = tibble(
   iter = 1:1000
 ) %>% 
   mutate(samp_res = map(iter , sim_mean_sd, samp_size = 30)) %>% 
   unnest(samp_res)
 ```
-trying different samp sizes...
-```{r}
+
+trying different samp sizes…
+
+``` r
 sim_res = 
   expand_grid(
     n = c(10, 30, 60, 100),
@@ -80,8 +122,10 @@ sim_res =
   mutate(samp_res = map(n, \(x) sim_mean_sd(x, true_mean = 50))) %>% 
   unnest(samp_res)
 ```
+
 simpler version
-```{r}
+
+``` r
 sim_res = 
   expand_grid(
     n = c(10, 30, 60, 100),
@@ -91,21 +135,36 @@ sim_res =
   unnest(samp_res)
 ```
 
-```{r}
+``` r
 sim_res %>% 
   group_by(n) %>% 
   summarize(
     se = sd(samp_mean)
   )
 ```
+
+    ## # A tibble: 4 × 2
+    ##       n    se
+    ##   <dbl> <dbl>
+    ## 1    10 1.52 
+    ## 2    30 0.881
+    ## 3    60 0.655
+    ## 4   100 0.512
+
 Plot it
-```{r}
+
+``` r
 sim_res %>% 
   filter(n == 100) %>% 
   ggplot(aes(x = samp_mean))+
   geom_histogram()
 ```
-```{r}
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](simulation_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+``` r
 sim_res %>% 
   mutate(
     n = str_c("n = ", n)
@@ -113,8 +172,11 @@ sim_res %>%
   ggplot(aes(x = n, y = samp_mean))+
   geom_violin()
 ```
-### Simple linear regression
-```{r}
+
+![](simulation_files/figure-gfm/unnamed-chunk-10-1.png)<!-- --> \###
+Simple linear regression
+
+``` r
 sim_data = 
   tibble(
     x = rnorm(30, mean = 1, sd = 1),
@@ -129,8 +191,13 @@ sim_data %>%
   stat_smooth(method = "lm")
 ```
 
-let's turn this into a function
-```{r}
+    ## `geom_smooth()` using formula = 'y ~ x'
+
+![](simulation_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+let’s turn this into a function
+
+``` r
 sim_regression = function(n) {
   sim_data = 
   tibble(
@@ -158,18 +225,23 @@ sim_res =
    mutate(sample_size = str_c("n = ", sample_size)) %>% 
    ggplot(aes(x = sample_size, y = beta1_hat))+
    geom_boxplot()
-   
 ```
-### birthday problem
-let's put people in a room
-```{r}
+
+![](simulation_files/figure-gfm/unnamed-chunk-12-1.png)<!-- --> \###
+birthday problem let’s put people in a room
+
+``` r
 # 365 days, draw 10 days at random, with replacement
 bdays = sample(1:365, size = 10, replace = TRUE)
 
 length(unique(bdays)) < 10
 ```
+
+    ## [1] FALSE
+
 write a function that does this
-```{r}
+
+``` r
 bday_sim = function(n) {
   bdays = sample(1:365, size = n, replace = TRUE)
 
@@ -178,8 +250,10 @@ duplicate = length(unique(bdays)) < n
 return(duplicate)
 }
 ```
+
 run this a lot
-```{r}
+
+``` r
 sim_res = 
   expand_grid(
     n = 2:50,
@@ -195,3 +269,4 @@ sim_res %>%
   geom_line()
 ```
 
+![](simulation_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
