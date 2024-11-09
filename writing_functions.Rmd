@@ -41,6 +41,12 @@ z_scores(x = 3)
 z_scores(x = c("my", "name", "is", "Alice"))
 ```
 ## a new function!
+```{r}
+mean_and_sd = function(x) {
+  
+}
+```
+
 
 ```{r}
 mean_and_sd = function(x) {

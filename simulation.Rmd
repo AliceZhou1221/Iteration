@@ -22,6 +22,7 @@ sim_df %>%
     sd = sd(x)
   )
 ```
+
 simulation function to check sample mean and sd
 ```{r}
 sim_mean_sd = function(samp_size, true_mean = 10, true_sd = 5) {
@@ -77,6 +78,16 @@ sim_res =
     n = c(10, 30, 60, 100),
     iter = 1:1000
   ) %>% 
+  mutate(sim_res = map(n, sim_mean_sd)) %>% 
+  unnest(sim_res)
+```
+
+```{r}
+sim_res = 
+  expand_grid(
+    n = c(10, 30, 60, 100),
+    iter = 1:1000
+  ) %>% 
   mutate(samp_res = map(n, \(x) sim_mean_sd(x, true_mean = 50))) %>% 
   unnest(samp_res)
 ```
@@ -95,6 +106,7 @@ sim_res =
 sim_res %>% 
   group_by(n) %>% 
   summarize(
+    mean = mean(samp_mean),
     se = sd(samp_mean)
   )
 ```
@@ -172,13 +184,29 @@ write a function that does this
 ```{r}
 bday_sim = function(n) {
   bdays = sample(1:365, size = n, replace = TRUE)
-
-duplicate = length(unique(bdays)) < n
-
-return(duplicate)
+  duplicates = length(unique(bdays)) < n
+  return(duplicates)
 }
+
+bday_sim(30)
 ```
+
 run this a lot
+```{r}
+sim_res =
+  expand_grid(
+    n = 2:50,
+    iter = 1:1000
+  ) %>% 
+  mutate(
+    res = map_lgl(n, bday_sim)
+  ) %>% 
+  group_by(n) %>% 
+  summarize(
+    prob = mean(res)
+  )
+```
+
 ```{r}
 sim_res = 
   expand_grid(
